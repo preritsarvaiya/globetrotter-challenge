@@ -18,7 +18,7 @@
 
 ## Tech Stack
 - **Backend:** Java, Spring Boot, Spring Data JPA
-- **Database:** MySQL (or H2 for development)
+- **Database:** MySQL
 - **API Documentation:** SpringDoc OpenAPI (Swagger UI)
 - **Build Tool:** Maven
 
