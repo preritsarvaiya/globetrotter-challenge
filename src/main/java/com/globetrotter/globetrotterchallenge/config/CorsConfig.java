@@ -14,8 +14,9 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:8080/", "http://globetrotter-challenge-production-5f26.up.railway.app/**")
-                        .allowedMethods("GET", "POST");
+                        .allowedOrigins("http://localhost:8080/")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*");
             }
         };
     }
