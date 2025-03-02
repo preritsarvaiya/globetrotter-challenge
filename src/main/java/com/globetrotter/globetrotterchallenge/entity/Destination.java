@@ -1,5 +1,6 @@
 package com.globetrotter.globetrotterchallenge.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,11 +21,13 @@ public class Destination {
     @ElementCollection
     @CollectionTable(name = "destination_clues", joinColumns = @JoinColumn(name = "destination_id"))
     @Column(name = "clue")
+    @JsonProperty("clues")
     private List<String> clues = new ArrayList<>();
 
     @ElementCollection
     @CollectionTable(name = "destination_fun_facts", joinColumns = @JoinColumn(name = "destination_id"))
     @Column(name = "fun_fact")
+    @JsonProperty("funFacts")
     private List<String> funFact = new ArrayList<>();
 
     @ElementCollection

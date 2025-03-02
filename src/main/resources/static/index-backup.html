@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Globetrotter Challenge</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f8ff;
+        }
+
+        .section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .clue {
+            font-size: 1.2em;
+            margin: 10px 0;
+            padding: 10px;
+            background: #e3f2fd;
+            border-radius: 5px;
+        }
+
+        .option {
+            padding: 10px;
+            margin: 5px;
+            background: #bbdefb;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .option:hover {
+            background: #90caf9;
+        }
+
+        .score {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .confetti {
+            animation: confetti 2s linear;
+        }
+
+        @keyframes confetti {
+            0% { transform: translateY(0) rotate(0); opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        .sad-face {
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+<!-- Registration Section -->
+<div class="section" id="registrationSection">
+    <h2>Start Playing Globetrotter!</h2>
+    <input type="text" id="username" placeholder="Choose a username">
+    <button onclick="registerUser()">Start Game</button>
+</div>
+
+<!-- Game Section -->
+<div class="section hidden" id="gameSection">
+    <div id="clues"></div>
+    <div id="options"></div>
+    <div id="feedback"></div>
+    <button onclick="nextQuestion()" class="hidden" id="nextButton">Next Question</button>
+</div>
+
+<!-- Challenge Section -->
+<div class="section">
+    <button onclick="challengeFriend()">Challenge a Friend</button>
+</div>
+
+<!-- Score Display -->
+<div class="score">
+    Correct: <span id="correctScore">0</span> |
+    Incorrect: <span id="incorrectScore">0</span>
+</div>
+
+<script>
+    let currentUsername = '';
+
+    async function registerUser() {
+        const username = document.getElementById('username').value;
+        try {
+            const response = await fetch('/api/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username })
+            });
+
+            if (response.ok) {
+                currentUsername = username;
+                document.getElementById('registrationSection').classList.add('hidden');
+                document.getElementById('gameSection').classList.remove('hidden');
+                loadQuestion();
+            }
+        } catch (error) {
+            console.error('Registration failed:', error);
+        }
+    }
+
+    async function loadQuestion() {
+        try {
+            const response = await fetch(`/api/game/random?username=${currentUsername}`);
+            const data = await response.json();
+
+            // Display clues
+            const cluesDiv = document.getElementById('clues');
+            cluesDiv.innerHTML = data.clues.map(clue =>
+                `<div class="clue">${clue}</div>`
+            ).join('');
+
+            // Display options
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = data.possibleAnswers.map(option =>
+                `<button class="option" onclick="submitGuess('${option}')">${option}</button>`
+            ).join('');
+        } catch (error) {
+            console.error('Error loading question:', error);
+        }
+    }
+
+    async function submitGuess(guessedCity) {
+        try {
+            const response = await fetch('/api/game/guess', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: currentUsername,
+                    guessedCity
+                })
+            });
+
+            const result = await response.json();
+            showFeedback(result);
+            updateScore(result);
+        } catch (error) {
+            console.error('Error submitting guess:', error);
+        }
+    }
+
+    function showFeedback(result) {
+        const feedbackDiv = document.getElementById('feedback');
+        feedbackDiv.innerHTML = `
+                <h2>${result.correct ? '🎉 Correct!' : '😢 Incorrect'}</h2>
+                <div class="${result.correct ? 'confetti' : 'sad-face'}">
+                    ${result.correct ? '🎉' : '😢'}
+                </div>
+                <p>${result.correct ? "Fun Fact: " + result.funFact : "Try Again"}</p>
+            `;
+        document.getElementById('nextButton').classList.remove('hidden');
+    }
+
+    function updateScore(result) {
+        document.getElementById('correctScore').textContent = result.correctAnswers;
+        document.getElementById('incorrectScore').textContent = result.incorrectAnswers;
+    }
+
+    function nextQuestion() {
+        document.getElementById('feedback').innerHTML = '';
+        document.getElementById('nextButton').classList.add('hidden');
+        loadQuestion();
+    }
+
+    function challengeFriend() {
+        const challengeLink = `${window.location.href}?challenge=${currentUsername}`;
+
+        // For WhatsApp sharing
+        const whatsappMessage = `Can you beat my Globetrotter score? 🗺️ ${challengeLink}`;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappMessage)}`, '_blank');
+    }
+
+    // Initialize challenge if URL has parameter
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const challengeUsername = urlParams.get('challenge');
+
+        if (challengeUsername) {
+            fetch(`/api/users/${challengeUsername}`)
+                .then(response => response.json())
+                .then(profile => {
+                    if(confirm(`${profile.username} has ${profile.correctAnswers} correct answers! Play now?`)) {
+                        window.location.href = '/'; // Redirect to main game
+                    }
+                });
+        }
+    };
+</script>
+</body>
+</html>

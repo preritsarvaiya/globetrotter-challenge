@@ -10,7 +10,7 @@
 5. [License](#license)
 
 ## Features
-- **Random Destination:** Retrieve a random destination with clues, fun facts, and trivia.
+- **Random Destination:** Retrieve a random destination using OpenAI with clues, fun facts, and trivia.
 - **Answer Validation:** Validate user guesses and provide instant feedback.
 - **User Registration & Scoring:** Register users and track their correct/incorrect answers.
 - **Challenge a Friend:** Generate unique invitation links that display the inviter’s score.
