@@ -34,6 +34,7 @@ public class GameController {
             @ApiResponse(responseCode = "404", description = "No destinations available")
     })
     @GetMapping("/random")
+    @CrossOrigin
     public ResponseEntity<DestinationDTO> getRandomDestination(
             @Parameter(description = "Current user's username", required = true, example = "adventure_seeker")
             @RequestParam String username) {
@@ -50,6 +51,7 @@ public class GameController {
             @ApiResponse(responseCode = "400", description = "Invalid request format")
     })
     @PostMapping("/guess")
+    @CrossOrigin
     public ResponseEntity<GuessResult> submitGuess(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Guess submission payload",

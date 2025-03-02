@@ -35,6 +35,7 @@ public class UserController {
             @ApiResponse(responseCode = "409", description = "Username already exists")
     })
     @PostMapping
+    @CrossOrigin
     public ResponseEntity<UserProfileResponse> registerUser(
             @Parameter(description = "Username must be unique", required = true, example = "globetrotter123")
             @RequestBody UserRegistrationRequest request) {
@@ -55,6 +56,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     @GetMapping("/{username}")
+    @CrossOrigin
     public ResponseEntity<UserProfileResponse> getUserProfile(
             @Parameter(description = "Username to lookup", example = "globetrotter123")
             @PathVariable String username) {
